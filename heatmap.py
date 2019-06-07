@@ -59,6 +59,7 @@ for position in directory:
     for i in range(25):
         for j in range(25):
             line = linelist[startlen]
+            startlen = startlen+1
             l = line.strip()
             regex = r"\[(.*?)\]"
             match = re.findall(regex, l)
@@ -70,6 +71,7 @@ for position in directory:
             avg = sum/len(list1)
 #             print(list1,sum,avg)
             
+            #print "avg :",avg
             data[i][j] = avg 
             dic['position'].append(position)
             dic['TX'].append(i)
