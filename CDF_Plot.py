@@ -43,6 +43,7 @@ corrupt_pdp_locations = []
 
 ##pdp-threshold for selecting peaks
 pdpthreshold = 0.001
+
 def plotCDFUsingList():
     count = 1
     for n in [list_ba,list_ra,list_ba_ra]:
@@ -340,12 +341,10 @@ def get_list_for_cdf_plots(beam_tput_overall,best_beam_dict,max_tput,best_init_m
             continue
         if pdp_val == [] and (plotparameter == "PDP" or plotparameter == "PEAK"):
             continue
-        # if snr_val < -10:
-        #     continue
 
-        #condition for low snr drops
-        # if (((initial_snr - snr_val)/initial_snr) * 100 ) > 70:
-        #     continue
+        ##condition for low snr drops
+        if (((initial_snr - snr_val)/initial_snr) * 100 ) > 70 and snrcondition == "SNR":
+            continue
 
         ##difference between ba and ra throughput
         tput = tput_ba - tput_ra
@@ -374,7 +373,7 @@ def get_list_for_cdf_plots(beam_tput_overall,best_beam_dict,max_tput,best_init_m
 
         ## snr drop
         if plotparameter == "SNR":
-            plotvalue = ((initial_snr - snr_val)/initial_snr)*100
+            plotvalue = ((initial_snr - snr_val) / initial_snr) * 100
 
         ##TOF Drop
         if plotparameter == "TOF":
@@ -395,6 +394,10 @@ def get_list_for_cdf_plots(beam_tput_overall,best_beam_dict,max_tput,best_init_m
 home_path = sys.argv[1]
 plot = sys.argv[2]
 plotparameter = sys.argv[3]
+if len(sys.argv) == 5 :
+    snrcondition = sys.argv[4]
+else:
+    snrcondition = "na"
 
 directory = sorted([f for f in os.listdir(home_path) if not f.startswith('.')])
 
