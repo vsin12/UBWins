@@ -4,7 +4,11 @@ import re
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
-fontsize = '8'
+import math
+from scipy import stats
+fontsize = '4'
+
+corrupt_pdp_locations = []
 
 def convert_beam_to_text(beam):
     return '[' + str(beam[0]) + ']_[' + str(beam[1]) + ']_[0]'
@@ -13,67 +17,88 @@ def get_best_beam(path):
     linelist = []
     fileHandler = open(path+"/workfile",'r')
     for line in fileHandler:
-        if linelist != []:
-            line1 = int(line.split(',')[1])
-            lastline = int(linelist[-1].split(',')[1])
-            diff = line1-lastline
-            if line1-lastline > 1 or line1-lastline == -23:
-                exp = line.split(',')[0]
+        linelist.append(line)
 
-                if line1-lastline == -23:
-                    exp = int(line.split(',')[0])-1
-                    lastline = lastline+1
-                    line2 = str(exp)+","+str(lastline)+",[-9999.0]"
-                    linelist.append(line2)
-                else:
-                    for f in range (0,diff-1):
-                        lastline = lastline+1
-                        line2 = str(exp)+","+str(lastline)+",[-9999.0]"
-                        linelist.append(line2)
+    # print "length : ",len(linelist)
 
-                linelist.append(line)
-            else:
-                linelist.append(line)
-        else:
-            linelist.append(line)
-
-    print "length : ",len(linelist)
-
-    data = np.zeros((25,25))
-    startlen = 0
-    for i in range(25):
-        for j in range(25):
-            line = linelist[startlen]
-            startlen = startlen+1
-            l = line.strip()
-            regex = r"\[(.*?)\]"
-            match = re.findall(regex, l)
-            list1=[]
-            list1 = match[0].split(",")
-            sum,avg = 0,0
-            for k in range(len(list1)):
-                sum += float(list1[k])
-            avg = sum/len(list1)
-
-            data[i][j] = avg
+    data = np.full((25,25),-9999.0)
+    for line in linelist:
+        l = line.strip()
+        i = int(l.split(',')[0])
+        j = int(l.split(',')[1])
+        regex = r"\[(.*?)\]"
+        match = re.findall(regex, l)
+        list1=[]
+        list1 = match[0].split(",")
+        sum,avg = 0,0
+        for k in range(len(list1)):
+            sum += float(list1[k])
+        avg = sum/len(list1)
+        data[i][j] = avg
     return np.unravel_index(np.argmax(data), np.shape(data))
 
-def get_snr(pos, beam_text):
-    f = open(pos + '/' + beam_text + '_[ ].snr', "rb")
-    sum, avg = 0,0
-    list = []
-    while True:
-        bits = f.read(8)
-        if not bits:
-            break
-        x = struct.unpack_from('>d',bits)
-        if str(x[0]) != 'nan':
-            list.append(x)
-    for val in list:
-        sum += val[0]
-    avg = sum/len(list)
-    return avg
+def get_snr_from_pdp(pos, beam_text):
+    try:
+        listoflist = []
+        finalList  = []
+        f = open(pos + '/' + beam_text + '_[ ].pdp', "rb")
+        num = 0
+        total = 0
+        while True:
+            flag = 0
+            list = []
+            total += 1
+            bits = f.read(4)
+            if not bits:
+                break
+            x = struct.unpack_from('>i',bits)
+            if x[0] == 0:
+                continue
+            for i in range(0,x[0]):
+                bits = f.read(8)
+                num += 1
+                x = struct.unpack_from('>d',bits)
+                if(math.isnan(x[0])):
+                    list.append(0)
+                else:
+                    list.append(x[0])
+            listoflist.append(list)
 
+        lengthOfList = len(listoflist)
+
+        for i in range(0,1024):
+            sum = 0
+            avg = 0
+            for k in range(0,lengthOfList):
+                   sum = sum + listoflist[k][i]
+            avg = float(sum)/lengthOfList
+            finalList.append(avg)
+
+        # print finalList[0]
+
+        ##SNR Calculation from PDP 
+        first100 = 0
+        for n in range (0,100):
+            first100 = first100 +  finalList[n]
+        last100 = 0
+        for n in range (924,1024):
+            last100 =  last100 + finalList[n]
+        noiseEstimate  = (first100 + last100)/200.0
+
+        signalPowerEstimate = 0
+        for n in range(0,1024):
+            signalPowerEstimate = signalPowerEstimate + finalList[n]
+
+        signalPowerEstimate = signalPowerEstimate/1024.0
+        signalPowerEstimate = signalPowerEstimate - noiseEstimate
+        snrEstimate = signalPowerEstimate/noiseEstimate
+        print np.log10(snrEstimate)*10
+        # print str(snrEstimate)+" - "+pos+" - "+beam_text
+        return np.log10(snrEstimate)*10
+    except Exception as e:
+        print "PDP : Exception - ",e
+        corrupt_pdp_locations.append(pos + " - " + beam_text + "\n")
+        return -10
 home_path = sys.argv[1]
 directory = sorted([f for f in os.listdir(home_path) if not f.startswith('.')])
 
@@ -96,7 +121,7 @@ for position in directory:
     if best_init_beam == (-1,-1):
         best_init_beam_text = convert_beam_to_text(best_beam)
 
-    print "---------",position,"started------------"
+    # print "---------",position,"started------------"
     pos_throughput = sorted([f for f in os.listdir(home_path+position) if re.search('.tput', f)])
     beam_tput = {}
 
@@ -246,7 +271,9 @@ tput_val = []
 snr_val = []
 for pos in positions:
     tput_val.append(beam_tput_overall[pos][best_init_beam_mcs])
-    snr_val.append(get_snr(home_path + pos, best_init_beam_mcs))
+    print "\n"
+    print pos
+    snr_val.append(get_snr_from_pdp(home_path + pos, best_init_beam_mcs))
 
 fig, ax = plt.subplots()
 ax.bar(positions,tput_val)
@@ -273,3 +300,6 @@ for rect, label in zip(rects, label):
 
 plt.savefig(save_path + '/NA_SNR.pdf')
 plt.close()
+
+print "\n"
+print corrupt_pdp_locations

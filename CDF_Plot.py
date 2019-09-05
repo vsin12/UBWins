@@ -7,16 +7,10 @@ import sys
 import math
 from scipy import stats
 
-##fontsize in plots for x,y - labels
-fontsize = '8'
-
-
-##Handle division by zero error in matplot
-np.seterr(divide='ignore', invalid='ignore')
-
 ##TOF Values - Manually taken at each point - START
 lobbyDiagonal = [1880325.87,1880326.5,sys.maxint,1880328.62]
 lobbyBackward = [1880325.87,1880326.75,1880327.75,1880328.75]
+lobbyBackwardExtra = [1756229.62,1756231.24,1756231.87,1756232.5,1756233.75,1756234.5,1756235.25,1756236,1756236.75]
 lobbyLateral =  [1880325.87,1880325.87,1880326.25,1880326.62,1880327.12,1880327.62]
 lobbyRotation_10 = [576247.37,576247.37,576247.37,576247.5,576247.5,sys.maxint,sys.maxint,576247.37,576247.75,576247.5,576247.5,576252.5,sys.maxint]
 lobbyRotation_12 = [576248.25,576248.25,576248.25,sys.maxint,576248.25,576248.25,576248.25,576248.25,576248.25,sys.maxint,576249.75,576249.75,576249.75]
@@ -27,13 +21,65 @@ lab = [280073.12,280073.25,sys.maxint,280074.5,280075,280076,280076.62,280077.37
 labRotation_Pos3 =[801884.75,801884.75,801884.75,801884.75,801884.75,801884.75,801884.75,801884.62,801884.62,801884.62,801884.62,801884.62,801884.75]
 labRotation_Pos6 =[801886.62,801886.62,801886.62,801886.62,801888.25,801888.25,801889.12,801886.62,801886.62,801886.62,801886.62,801886.62,801886.62]
 labRotation_Pos9 =[801888.37,801888.37,sys.maxint,sys.maxint,sys.maxint,sys.maxint,sys.maxint,801888.37,sys.maxint,sys.maxint,sys.maxint,sys.maxint,sys.maxint]
-corridor = [1835631.87,1835633.5,1835635,1835636.62,1835638.5]
+corridor = [1835631.87,1835632.655,1835633.5,1835634.345,1835635.19,1835636.035,1835636.88,1835637.725,1835638.57,1835639.415,1835640.26,1835641.105,1835641.95,1835642.795,1835643.64,1835644.485,1835645.33]
 corridorRotation_Pos5 = [1740825.87,1740825.87,1740826,1740825.87,1740825.87,sys.maxint,sys.maxint,1740825.87,1740825.87,1740825.87,1740825.87,sys.maxint,sys.maxint]
+frontCorridor_part1 = [1368529.12,1368529.87,1368530.62,1368531.37,1368532.12,1368533.25,1368533.75,1368534.62,1368535.62,1368536.25,1368537.12]
+frontCorridor_part2 = [383181.75,383182.62,383183.37,383184.25,383185,383185.75,383186.87,383187.37,383188.25,383189,383189.87]
 ##TOF Values - Manually taken at each point -- END
+
+##Blockage_TOF_Values
+conference_blockage_lat_1 = [329637.62,329637.75,329637.62,329637.62]
+conference_blockage_lat_7 = [329641.5,329642,329641.5,329641.62]
+corridor_blockage_lat_5 = [544585.12,544589.37,544585.12,544585.12]
+corridor_blockage_lat_10 = [544589.25,544589.37,544589.37,544589.25]
+corridor_blockage_lat_12_5 = [544592.12,544592.25,544592.25,544592.12]
+front_corridor_1_lat_10 = [331383,331383.25,331383,331383.25]
+front_corridor_2_lat_10 = [138589.5,138589.75,138589.62,138589.62]
+lab_blockage_2 = [224003.37,224003.37]
+lobby_blockage_1_1 = [289863.37,0,0,0]
+lobby_blockage_1_10 = [289865.25,289865.62,0,289865.25]
+lobby_blockage_2_3 = [1756229.62,0,1756229.62,1756229.87]
+##
+
+##Interference_TOF_Value
+interference_front_corridor_1 = [1365626.66,1365626.66,1365626.66,1365626.66]
+interference_front_corridor_2 = [777806.5,777806.5,777806.5,777806.5]
+interference_back_corridor_5 = [601599,601599,601599,601599]
+interference_back_corridor_10 = [226865.5,226865.5,226865.5,226865.5]
+interference_back_corridor_12_5 = [1592995.37,1592995.37,1592995.37,1592995.37]
+interference_lobby_1_1 = [8692995.5,8692995.5,8692995.5,8692995.5]
+interference_lobby_1_10 = [1152820.87,1152820.87,1152820.87,1152820.87]
+interference_lobby_2_3 = [1996526.5,1996526.5,1996526.5,1996526.5]
+interference_conference_1 = [1395190.75,1395190.75,1395190.75,1395190.75]
+interference_conference_7 = [274307.62,274307.62,274307.62,274307.62]
+interference_lab = [343844.87,343844.87,343844.87,343844.87]
+
+
+## SNR,PDP,CIR,FFT_PDP,FFT_CIR,All,TOF
+plotparameter = "ALL"
+## ALL,Lat,Rotation,Interference,SpecificLocation
+locationParameter = "LabLat"
+snrCondition = False
+tofCondition = False
+labelTxtForSNR = ""
+labelTxtForTOF = ""
+
+if snrCondition:
+    labelTxtForSNR = "_With_SNR_Condition"
+if tofCondition:
+    labelTxtForTOF = "_With_TOF_Condition"
+
+##fontsize in plots for x,y - labels
+fontsize = '8'
+
+##HANDle division by zero error in matplot
+np.seterr(divide='ignore', invalid='ignore')
+
 
 ##ba/ra/ba=ra lists
 list_ba = []
 list_ra = []
+list_baplusra = []
 list_ba_ra = []
 
 ##ALL
@@ -41,6 +87,9 @@ pdp_list = []
 cir_list = []
 ftt_pdp_list = []
 ftt_cir_list= []
+
+##LocationList
+locList = []
 
 ##Locations where pdp/cir files are not proper
 ##Same are also being written to a .txt file
@@ -59,8 +108,18 @@ def writeCorruptLocationsToFile(errorlist,corruptfilename):
     fd.write("Files Corrupt : " + corruptfilename + "\n\n" + str1 + "\n\n" + "Number of files : " +  str2)
     fd.close()
 
+def plotIncludingLocations(x_list,y_list):
+    labeltext = "PDP Similarity at : "+locationParameter
+    plt.plot(x_list,y_list,label = labeltext)
+    plt.grid(True)
+    plt.legend(loc="upper left")
+    plt.xticks(fontsize=3)
+    plt.xlabel("Locations", fontsize=8)
+    plt.savefig("PDP_Similarity"+"_"+locationParameter+".pdf")
+    plt.close()
+
+
 def plotCDFForAllParameters():
-    
     parameter = 0
     for n in [pdp_list,cir_list,ftt_pdp_list,ftt_cir_list]:
         temp  = np.sort(n)
@@ -79,51 +138,47 @@ def plotCDFForAllParameters():
         else:
             break;
         plt.plot(temp,yvals,label=labeltext)
-        flag = 1
     
-    # plt.figure(figsize=(10,8))
     plt.grid(True)
     plt.legend(loc="upper left")
     plt.xticks(np.arange(0,1,0.1))
     plt.xlabel(plotparameter, fontsize=14)
-    plt.savefig("AllParameters_CDF"+"_"+locationarg+".pdf")
+    plt.savefig("AllParameters_CDF"+"_"+locationParameter+".pdf")
     plt.close()
-    # print len(pdp_list)
-    # print len(cir_list)
-
+    if len(corrupt_pdp_locations) > 0:
+        writeCorruptLocationsToFile(corrupt_pdp_locations,"PDP")
+    if len(corrupt_cir_locations) > 0:
+        writeCorruptLocationsToFile(corrupt_cir_locations,"CIR")
 
 def plotCDFUsingList():
     count = 1
-    for n in [list_ba,list_ra,list_ba_ra]:
+    for n in [list_ba,list_ra,list_baplusra,list_ba_ra]:
         temp  = np.sort(n)
         yvals = np.arange(len(n))/float(len(n)-1)
         if count == 1:
-            labeltext = "BA"
-            count = count + 1
-        elif count == 2 and plot == "RA":
-            labeltext = "RA"
-            count = count + 1
-        elif count == 2 and plot == "BA_RA":
-            labeltext = "BA_RA"
-            count = count + 1
-        elif count == 3 and plot == "RA":
-            labeltext = "BA = RA"
+            labeltext = "BA"+" ("+str(len(temp)) + ")"
+            plt.plot(temp,yvals,label=labeltext)
+            count = 2
         else:
-            labeltext = "BA = BA_RA"
-        plt.plot(temp,yvals,label=labeltext)
-        plt.legend(loc="upper left")
-
+            if count == 2:
+                labeltext = "RA"+" ("+str(len(temp)) + ")"
+                plt.plot(temp,yvals,label=labeltext)
+                count = 3
+            elif count == 3:
+                labeltext = "BA+RA"+" ("+str(len(temp)) + ")"
+                plt.plot(temp,yvals,label=labeltext)
+                count = 4
+            else:
+                labeltext = "BA = RA"+" ("+str(len(temp)) + ")"
+                plt.plot(temp,yvals,label=labeltext)
+    
+    plt.grid(True)
     if plotparameter == "TOF":
         plt.xlim((-20,20))
+    plt.legend(loc="upper left")
     plt.xlabel(plotparameter, fontsize=14)
-    plt.savefig("BAvs" + plot + "_" + plotparameter  + ".pdf")
-
-    # list_ba.sort()
-    # list_ra.sort()
-    # list_ba_ra.sort()
-    # print "\nBA List ",list_ba
-    # print "\nRA List ",list_ra
-    # print "\nBA_RA List ",list_ba_ra
+    plt.savefig("BAvsRA_" + plotparameter +"Location_"+ locationParameter + labelTxtForSNR + labelTxtForTOF + ".pdf")
+    plt.close()
     print "\n"
     if len(corrupt_pdp_locations) > 0:
         writeCorruptLocationsToFile(corrupt_pdp_locations,"PDP")
@@ -134,40 +189,20 @@ def convert_beam_to_text(beam):
     return '[' + str(beam[0]) + ']_[' + str(beam[1]) + ']_[0]'
 
 def get_best_beam(path):
-    linelist = []
-    fileHandler = open(path+"/workfile",'r')
-    for line in fileHandler:
-        if linelist != []:
-            line1 = int(line.split(',')[1])
-            lastline = int(linelist[-1].split(',')[1])
-            diff = line1-lastline
-            if line1-lastline > 1 or line1-lastline == -23:
-                exp = line.split(',')[0]
-
-                if line1-lastline == -23:
-                    exp = int(line.split(',')[0])-1
-                    lastline = lastline+1
-                    line2 = str(exp)+","+str(lastline)+",[-9999.0]"
-                    linelist.append(line2)
-                else:
-                    for f in range (0,diff-1):
-                        lastline = lastline+1
-                        line2 = str(exp)+","+str(lastline)+",[-9999.0]"
-                        linelist.append(line2)
-
-                linelist.append(line)
-            else:
-                linelist.append(line)
-        else:
+    try:
+        initialflag = 1
+        linelist = []
+        fileHandler = open(path+"/workfile",'r')
+        for line in fileHandler:
             linelist.append(line)
-
-    data = np.zeros((25,25))
-    startlen = 0
-    for i in range(25):
-        for j in range(25):
-            line = linelist[startlen]
-            startlen = startlen+1
+        
+        # print len(linelist)
+        data = np.full((25,25),-9999.0)
+        # print data
+        for line in linelist:
             l = line.strip()
+            i = int(l.split(',')[0])
+            j = int(l.split(',')[1])
             regex = r"\[(.*?)\]"
             match = re.findall(regex, l)
             list1=[]
@@ -176,31 +211,15 @@ def get_best_beam(path):
             for k in range(len(list1)):
                 sum += float(list1[k])
             avg = sum/len(list1)
-
             data[i][j] = avg
-    return np.unravel_index(np.argmax(data), np.shape(data))
+        
+        # print path
+        # print np.unravel_index(np.argmax(data), np.shape(data))
+        return np.unravel_index(np.argmax(data), np.shape(data))
+    except:
+        print len(linelist),path,"error reading workfile"
 
-def get_snr(pos, beam_text):
-    f = open(pos + '/' + beam_text + '_[ ].snr', "rb")
-    sum, avg = 0,0
-    list = []
-    while True:
-        bits = f.read(8)
-        if not bits:
-            break
-        x = struct.unpack_from('>d',bits)
-        if str(x[0]) != 'nan':
-            list.append(x)
-    for val in list:
-        sum += val[0]
-    avg = sum/len(list)
-    return avg
-
-
-def get_pdp(pos, beam_text):
-    #Ignoring incorrect pdp files
-    if pos.find("Test_cdf/CoridoorRotation/pos15_0/neg45") >= 0 or pos.find("Test_cdf/ConfRotation/Pos5/90") >= 0 or pos.find("Test_cdf/ConferenceRoom/pos7") >= 0 or pos.find("Test_cdf/LabRotation/Pos6/75") >= 0 or pos.find("Test_cdf/Lobby_Rotation/Pos10/75") >= 0 or pos.find("Test_cdf/Lobby_Diagonal/Pos4") >= 0 or pos.find("Test_cdf/Lobby_Rotation/Pos12/neg45") >= 0 or pos.find("Test_cdf/Lobby_Rotation/Pos10/90") >= 0:
-        return []
+def get_pdp_AND_snr(pos, beam_text):
     try:
         listoflist = []
         finalList  = []
@@ -214,7 +233,10 @@ def get_pdp(pos, beam_text):
             bits = f.read(4)
             if not bits:
                 break
-            for i in range(0,1024):
+            x = struct.unpack_from('>i',bits)
+            if x[0] == 0:
+                continue
+            for i in range(0,x[0]):
                 bits = f.read(8)
                 num += 1
                 x = struct.unpack_from('>d',bits)
@@ -234,11 +256,76 @@ def get_pdp(pos, beam_text):
             avg = float(sum)/lengthOfList
             finalList.append(avg)
 
-        return finalList
+        ##SNR Calculation from PDP 
+        first100 = 0
+        for n in range (0,100):
+            first100 = first100 +  finalList[n]
+        last100 = 0
+        for n in range (924,1024):
+            last100 =  last100 + finalList[n]
+        noiseEstimate  = (first100 + last100)/200.0
+
+        signalPowerEstimate = 0
+        for n in range(0,1024):
+            signalPowerEstimate = signalPowerEstimate + finalList[n]
+
+        signalPowerEstimate = signalPowerEstimate/1024.0
+        signalPowerEstimate = signalPowerEstimate - noiseEstimate
+        snrEstimate = signalPowerEstimate/noiseEstimate
+        return finalList,np.log10(snrEstimate) * 10
     except Exception as e:
         print "PDP : Exception - ",e
         corrupt_pdp_locations.append(pos + " - " + beam_text + "\n")
-        return []
+        return [],-10
+
+def get_crc(pos,beam_text):
+    count_success = 0
+    count_failure = 0
+    f = open(pos + '/' + beam_text + '_[ ].crcpattern', "rb")
+    while True:
+        bits = f.read(4)
+        if not bits:
+            break
+        a = struct.unpack_from('>i',bits)
+        bits = f.read(4)
+        b = struct.unpack_from('>i',bits)
+        for i in range(a[0] * b[0]):
+            bits = f.read(1)
+            x = struct.unpack_from('>?',bits)
+            if not x[0]:
+                count_success = count_success + 1
+            else:
+                count_failure = count_failure + 1
+        
+    return float(count_success)/(count_success+count_failure)
+
+def get_phase(pos,beam_text):
+    listoflist = []
+    finalList  = []
+    f = open(pos + '/' + beam_text + '_[ ].phase', "rb")
+    num = 0
+    total = 0
+    while True:
+        flag = 0
+        list = []
+        total += 1
+        bits = f.read(4)
+        if not bits:
+            break
+        a = struct.unpack_from('>i',bits)
+        bits = f.read(4)
+        b = struct.unpack_from('>i',bits)
+        for i in range(a[0] * b[0]):
+            bits = f.read(8)
+            num += 1
+            x = struct.unpack_from('>d',bits)
+            if(math.isnan(x[0])):
+                list.append(0)
+            else:
+                list.append(x[0])
+        listoflist.append(np.average(list[:22]))
+
+    return np.average(listoflist)
 
 def get_cir(pos,beam_text):
     try:
@@ -317,6 +404,7 @@ def getPeaksFromPDP(pdpValueList):
     return peaks
 
 def get_list_for_cdf_plots(beam_tput_overall,best_beam_dict,max_tput,best_init_mcs,best_init_beam,path,test_pos):
+    # print test_pos
     positions = sorted(beam_tput_overall.keys())
 
     if 'Rotation' in path:
@@ -375,52 +463,104 @@ def get_list_for_cdf_plots(beam_tput_overall,best_beam_dict,max_tput,best_init_m
     locationList = []
     pdp_values = []
     cir_values = []
+    phase_values = []
+    crc_values = []
 
     for pos in positions:
         tput_val.append(beam_tput_overall[pos][best_init_beam_mcs])
-        if plotparameter == "PDP" or plotparameter == "PEAK" or plotparameter == "FFT_PDP" or plotparameter == "ALL":
-            pdp_values.append(get_pdp(path + pos, best_init_beam_mcs))
-        if plotparameter == "CIR" or plotparameter == "FFT_CIR" or plotparameter == "ALL":
-            cir_values.append(get_cir(path + pos, best_init_beam_mcs))
-        snr_values.append(get_snr(path + pos, best_init_beam_mcs))
+        pdp, snr = get_pdp_AND_snr(path + pos, best_init_beam_mcs)
+        pdp_values.append(pdp)
+        snr_values.append(snr)
+        cir_values.append(get_cir(path + pos, best_init_beam_mcs))
+        phase_values.append(get_phase(path + pos, best_init_beam_mcs))
+        crc_values.append(get_crc(path + pos, best_init_beam_mcs))
 
     if plotparameter != "ALL":
 
-        if plotparameter == "TOF":
-            if path.find("ConferenceRoom") > 0 :
-                locationList = conferenceRoom
-            elif path.find("ConfRotation/Pos1_1_1") > 0:
-                locationList = conferenceRoomRotation_Pos1_1_1
-            elif path.find("ConfRotation/Pos5") > 0:
-                locationList = conferenceRoomRotation_Pos5
-            elif path.find("CoridoorRotation/pos5") > 0:
-                locationList = corridorRotation_Pos5
-            elif path.find("CoridoorRotation/pos15_0") > 0:
-                locationList = []
-            elif path.find("CoridoorRotation/pos25_0") > 0:
-                locationList = []
-            elif path.find("Coridoor") > 0:
-                locationList = corridor
-            elif path.find("LabRotation/Pos3") > 0:
-                locationList = labRotation_Pos3
-            elif path.find("LabRotation/Pos6") > 0:
-                locationList = labRotation_Pos6
-            elif path.find("LabRotation/Pos9") > 0:
-                locationList = labRotation_Pos9
-            elif path.find("Lab") > 0:
-                locationList = lab
-            elif path.find("Lobby_Backward") > 0:
-                locationList = lobbyBackward
-            elif path.find("Lobby_Diagonal") > 0:
-                locationList = lobbyDiagonal
-            elif path.find("Lobby_Lateral") > 0:
-                locationList = lobbyLateral
-            elif path.find("Lobby_Rotation/Pos10") > 0:
-                locationList = lobbyRotation_10
-            elif path.find("Lobby_Rotation/Pos12") > 0:
-                locationList = lobbyRotation_12
-            else:
-                locationList = []
+        if path.find("ConferenceRoom_Lat") > 0 :
+            locationList = conferenceRoom
+        elif path.find("ConferenceRotation/Pos1") > 0:
+            locationList = conferenceRoomRotation_Pos1_1_1
+        elif path.find("ConferenceRotation/Pos5") > 0:
+            locationList = conferenceRoomRotation_Pos5
+        elif path.find("CoridoorRotation/pos5") > 0:
+            locationList = corridorRotation_Pos5
+        elif path.find("CoridoorRotation/pos15") > 0:
+            locationList = []
+        elif path.find("CoridoorRotation/pos25") > 0:
+            locationList = []
+        elif path.find("CorridorLat") > 0:
+            locationList = corridor
+        elif path.find("LabRotation/Pos3") > 0:
+            locationList = labRotation_Pos3
+        elif path.find("LabRotation/Pos6") > 0:
+            locationList = labRotation_Pos6
+        elif path.find("LabRotation/Pos9") > 0:
+            locationList = labRotation_Pos9
+        elif path.find("LabLat") > 0:
+            locationList = lab
+        elif path.find("Lobby_Lat_Backward") > 0:
+            locationList = lobbyBackward
+        elif path.find("Lobby_Lat_Diagonal") > 0:
+            locationList = lobbyDiagonal
+        elif path.find("Lobby_Lateral") > 0:
+            locationList = lobbyLateral
+        elif path.find("Lobby_Rotation/Pos10") > 0:
+            locationList = lobbyRotation_10
+        elif path.find("Lobby_Rotation/Pos12") > 0:
+            locationList = lobbyRotation_12
+        elif path.find("Lobby_Lat_2"):
+            locationList = lobbyBackwardExtra
+        elif path.find("Front_Corridor_back_Lat"):
+            locationList = frontCorridor_part2
+        elif path.find("Front_CorridorLat"):
+            locationList = frontCorridor_part1
+        elif path.find("Conference_Blockage_Lat/pos1"):
+            locationList = conference_blockage_lat_1
+        elif path.find("Conference_Blockage_Lat/pos7"):
+            locationList = conference_blockage_lat_7
+        elif path.find("Corridor_Blockage_Lat/pos5"):
+            locationList = corridor_blockage_lat_5
+        elif path.find("Corridor_Blockage_Lat/pos10"):
+            locationList = corridor_blockage_lat_10
+        elif path.find("Corridor_Blockage_Lat/pos12_5"):
+            locationList = corridor_blockage_lat_12_5
+        elif path.find("FrontCorridor_1_Blockage_Lat"):
+            locationList = front_corridor_1_lat_10
+        elif path.find("FrontCorridor_2_Blockage_Lat"):
+            locationList = front_corridor_2_lat_10
+        elif path.find("Lab_Blockage_Lat"):
+            locationList = lab_blockage_2
+        elif path.find("Lobby_2_Blockage_lat"):
+            locationList = lobby_blockage_2_3
+        elif path.find("Lobby_Blockage_Lat/pos1"):
+            locationList = lobby_blockage_1_1
+        elif path.find("Lobby_Blockage_Lat/pos10"):
+            locationList = lobby_blockage_1_10
+        elif path.find("X60_Interference/Back_Corridor/pos5"):
+            locationList = interference_back_corridor_5
+        elif path.find("X60_Interference/Back_Corridor/pos10"):
+            locationList = interference_back_corridor_10
+        elif path.find("X60_Interference/Back_Corridor/pos12_5"):
+            locationList = interference_back_corridor_12_5
+        elif path.find("X60_Interference/Conference/pos1"):
+            locationList = interference_conference_1
+        elif path.find("X60_Interference/Conference/pos7"):
+            locationList = interference_conference_7
+        elif path.find("X60_Interference/Front_Corridor_1/pos10"):
+            locationList = interference_front_corridor_1
+        elif path.find("X60_Interference/Front_Corridor_2/pos10"):
+            locationList = interference_front_corridor_2
+        elif path.find("X60_Interference/Lab/pos2"):
+            locationList = interference_lab
+        elif path.find("X60_Interference/Lobby_1/pos1"):
+            locationList = interference_lobby_1_1
+        elif path.find("X60_Interference/Lobby_1/pos10"):
+            locationList = interference_lobby_1_10
+        elif path.find("X60_Interference/Lobby_2/pos1"):
+            locationList = interference_lobby_2_3
+        else:
+            locationList = []
 
         flag = 1
         list_val = tput_val_ra
@@ -429,72 +569,54 @@ def get_list_for_cdf_plots(beam_tput_overall,best_beam_dict,max_tput,best_init_m
         initial_tput = 0
         initial_pdp = 0
         initial_cir = 0
+        initial_phase = 0
         tempPDPval = []
         tempCIRval = []
 
-        if plot == "BA_RA":
-            list_val = tput_val_ba_ra
-
-        if plotparameter != "TOF":
-            locationList = [0] * len(snr_values)
-
-        if plotparameter != "CIR" and plotparameter != "FFT_CIR":
-            cir_values = [0] * len(snr_values)
-
-        if plotparameter != "PDP" and plotparameter != "PEAK" and plotparameter != "FFT_PDP":
-            pdp_values = [0] * len(snr_values)
-
-
-        for pdp_val,tput_ra, tput_ba,snr_val,currentPosition,tof_val,cir_val in zip(pdp_values,list_val, tput_val_ba, snr_values,positions,locationList,cir_values):
+        for pdp_val,tput_ra, tput_ba,tput_baplusra, snr_val,cir_val,phase_val,crc_val,tof_val,currentPosition in zip(pdp_values,list_val, tput_val_ba,tput_val_ba_ra,snr_values,cir_values,phase_values,crc_values,locationList,positions):
+            # print "Inside"
             if flag == 1:
                 initial_snr = snr_val
                 initial_pdp = pdp_val
-                initialTOFValue = tof_val
                 initial_cir = cir_val
+                initialTOFValue = tof_val
+                initial_phase = phase_val
+                initial_crc = crc_val
                 flag = 0
                 continue
-            if tput_ba < 100 and tput_ra < 100:
+            if pdp_val == [] and (plotparameter == "PDP" or plotparameter == "FFT_PDP"):
                 continue
-            if pdp_val == [] and (plotparameter == "FFT_PDP" or plotparameter == "PDP" or plotparameter == "PEAK" ):
+
+            ##TOF Condition
+            if (initialTOFValue - tof_val > -0.5 or initialTOFValue - tof_val < -15) and tofCondition == True:
                 continue
 
             ##condition for low snr drops
-            if (((initial_snr - snr_val)/initial_snr) * 100 ) > 70 and snrcondition == "SNR":
+            if initial_snr - snr_val >= 12 and snrCondition == True:
                 continue
 
-            ##difference between ba and ra throughput
+            ##difference between ba AND ra throughput
             tput = tput_ba - tput_ra
+
+            ##Phase similarity
+            if plotparameter == "PHASE":
+                plotvalue = initial_phase - phase_val
+
+            if plotparameter == "CRC":
+                plotvalue = initial_crc - crc_val
 
             ## similarity between two pdp vectors using pearson coeff.
             if plotparameter == "PDP":
-                # tempPDPval,pdp_val = getPDPSimilarity(initial_pdp,pdp_val)
                 plotvalue = stats.pearsonr(initial_pdp, pdp_val)
                 plotvalue = plotvalue[0]
-                # if plotvalue > 0.95:
-                print "\n ------Current Position or Angle ------- : ",currentPosition
-                # print "Len current pos ",len(pdp_val)
-                # print "\nLength of list at initial position : ",len(tempPDPval)
                 formatted_list = [ '%.6f' % elem for elem in tempPDPval ]
-                # print "PDP List at initial position : ",formatted_list
                 formatted_list = [ '%.6f' % elem for elem in pdp_val ]
-                # print "Current Pos : ",formatted_list
-                print "PDP Similarity at this position  : ",plotvalue
 
             ## similarity between two pdp vectors using pearson coeff.
             if plotparameter == "CIR":
-                # tempCIRval,cir_val = getCIRSimilarity(initial_cir,cir_val)
                 plotvalue = stats.pearsonr(initial_cir, cir_val)
                 plotvalue = plotvalue[0]
-                # if plotvalue > 0.95:
-                print "\n ------Current Position or Angle ------- : ",currentPosition
-                # print "Len current pos ",len(cir_val)
-                formatted_list = [ '%.4f' % elem for elem in initial_cir ]
-                # print "CIR List at initial position : ",formatted_list
-                my_formatted_list = [ '%.4f' % elem for elem in cir_val]
-                # print "CIR List at Current Pos : ",formatted_list
-                print "CIR Similarity at this position  : ",plotvalue
 
-            ## number of peaks using pdp values
             if plotparameter == "PEAK":
                 peaksininitialpos = getPeaksFromPDP(initial_pdp)
                 peaksatcurrentpos = getPeaksFromPDP(pdp_val)
@@ -502,9 +624,9 @@ def get_list_for_cdf_plots(beam_tput_overall,best_beam_dict,max_tput,best_init_m
 
             ## snr drop
             if plotparameter == "SNR":
-                plotvalue = ((initial_snr - snr_val) / initial_snr) * 100
+                plotvalue = initial_snr - snr_val
 
-            ##TOF Drop
+            #TOF Drop
             if plotparameter == "TOF":
                 plotvalue = initialTOFValue - tof_val
 
@@ -512,38 +634,35 @@ def get_list_for_cdf_plots(beam_tput_overall,best_beam_dict,max_tput,best_init_m
                 fftinitialpos = abs(np.fft.fft(initial_pdp))
                 fftcurrentpos = abs(np.fft.fft(pdp_val))
                 plotvalue = stats.pearsonr(fftinitialpos,fftcurrentpos)
-                print "\n ------Current Position or Angle ------- : ",currentPosition
-                print "FFT at initial pos : ",fftinitialpos
-                print "FFT at current pos : ",fftcurrentpos
-                print "FFT(PDP) Similarity at this position : ",plotvalue[0]
                 plotvalue = plotvalue[0]
 
             if plotparameter == "FFT_CIR":
                 cirinitialpos = abs(np.fft.fft(initial_cir))
                 circurrentpos = abs(np.fft.fft(cir_val))
                 plotvalue = stats.pearsonr(cirinitialpos,circurrentpos)
-                print "\n ------Current Position or Angle ------- : ",currentPosition
-                print "FFT at initial pos : ",cirinitialpos
-                print "FFT at current pos : ",circurrentpos
-                print "FFT(CIR) Similarity at this position : ",plotvalue[0]
                 plotvalue = plotvalue[0]
 
             if tput >= 100:
                 list_ba.append(plotvalue)
             elif tput <= -100:
                 list_ra.append(plotvalue)
+            elif tput_ba < 100 and tput_ra < 100 and tput_baplusra >= 100:
+                list_baplusra.append(plotvalue)
             else:
                 list_ba_ra.append(plotvalue)
 
         print "\nlen(list_ba)",len(list_ba)
         print "len(list_ra)",len(list_ra)
+        print "len(list_ba+ra)",len(list_baplusra)
         print "len(list_ba_ra)",len(list_ba_ra)
     else:
         flag = 1
         initial_pdp = 0
         initial_cir = 0
         initial_snr = 0
-        for pdp_val,snr_val,cir_val in zip(pdp_values,snr_values,cir_values):
+        print test_pos
+        for pdp_val,snr_val,cir_val,position in zip(pdp_values,snr_values,cir_values,positions):
+
             if flag == 1:
                 initial_pdp = pdp_val
                 initial_cir = cir_val
@@ -551,11 +670,20 @@ def get_list_for_cdf_plots(beam_tput_overall,best_beam_dict,max_tput,best_init_m
                 flag = 0
                 continue
 
-            if (((initial_snr - snr_val)/initial_snr) * 100 ) > 70 and snrcondition == "SNR":
+            ##condition for low snr drops
+            if initial_snr - snr_val >= 12 and snrCondition == True:
                 continue
             
             if pdp_val != []:
                 pdp_list.append(stats.pearsonr(initial_pdp,pdp_val)[0])
+                if test_pos.find("Rotation")>0:
+                    tempStr = (test_pos.split("-")[1]+"_"+position).replace("Pos","")
+                    locList.append(tempStr.replace("neg","-"))
+                else:
+                    if position.find("9_1")>0:
+                        locList.append(position.replace("9_1","10"))
+                    else:
+                        locList.append(position)
                 fftinitialpos = abs(np.fft.fft(initial_pdp))
                 fftcurrentpos = abs(np.fft.fft(pdp_val))
                 plotvalue = stats.pearsonr(fftinitialpos,fftcurrentpos)
@@ -571,25 +699,11 @@ def get_list_for_cdf_plots(beam_tput_overall,best_beam_dict,max_tput,best_init_m
         print "len(cir_list) : ",len(cir_list)
 
 
-# print len(sys.argv)
 home_path = sys.argv[1]
-plot = sys.argv[2]
-plotparameter = sys.argv[3]
-if len(sys.argv) >= 5 :
-    if sys.argv[4] != "ALL":
-        locationarg = sys.argv[4]
-    else:
-        locationarg = ""
-
-if len(sys.argv) == 6 :
-    snrcondition = sys.argv[5]
+if locationParameter != "ALL":
+    directory = sorted([f for f in os.listdir(home_path) if locationParameter in  f])
 else:
-    snrcondition = "na"
-
-if locationarg == "Lateral":
-    directory = sorted([f for f in os.listdir(home_path) if "Rotation" not in f])
-else:
-    directory = sorted([f for f in os.listdir(home_path) if locationarg in  f])
+    directory = sorted([f for f in os.listdir(home_path) if "" in  f])
 
 
 print "Directories considered : ",directory
@@ -650,7 +764,60 @@ for dir in directory:
 
             path = home_path + dir +"/" + subdir + "/"
             get_list_for_cdf_plots(beam_tput_overall,best_beam_dict,max_tput,best_init_mcs,best_init_beam,path,dir+"-"+subdir)
+
+    elif dir.find("Blockage") > 0 or dir.find('Interference') >= 0:
+
+        subdirectory = sorted([f for f in os.listdir(home_path + dir) if not f.startswith('.')])
+
+        for subdir in subdirectory:
+            beam_tput_overall = {}
+            best_init_beam = (-1,-1)
+            best_init_mcs = -1
+            max_tput = -1
+            best_beam_dict = {}
+
+            print "\n****************"
+            print "Subdir : ",subdir
+            print "****************"
+            subdirect = sorted([f for f in os.listdir(home_path + dir + "/" + subdir) if not f.startswith('.')])
+            for position in subdirect:
+                absolute_path = home_path + dir
+                best_beam = get_best_beam(home_path + dir + "/" + subdir + "/" + position)
+                best_beam_dict[position] = best_beam
+                if best_init_beam == (-1,-1):
+                    best_init_beam_text = convert_beam_to_text(best_beam)
+
+                pos_throughput = sorted([f for f in os.listdir(home_path + dir + "/" + subdir + "/" + position) if re.search('.tput', f)])
+                beam_tput = {}
+                for tput in pos_throughput:
+                    f = open(home_path + dir + "/" + subdir + "/" + position + "/" + tput, "rb")
+                    sum, avg = 0, 0
+                    list = []
+                    while True:
+                        bits = f.read(8)
+                        if not bits:
+                            break
+                        x = struct.unpack_from('>d',bits)
+                        if str(x[0]) != 'nan':
+                            list.append(x)
+                    for val in list:
+                        sum += val[0]
+                    avg = sum/len(list)
+                    if best_init_beam_text in tput and best_init_beam == (-1,-1):
+                        if avg > max_tput:
+                            best_init_mcs = tput[-11:-10]
+                            max_tput = avg
+                    beam_tput[tput[:-9]] = avg
+
+                if best_init_beam == (-1,-1):
+                    best_init_beam = best_beam
+                    best_init_beam_text = '[' + str(best_init_beam[0]) + ']_[' + str(best_init_beam[1]) + ']_[0]'
+                    best_init_beam_mcs = best_init_beam_text + '_[' + best_init_mcs + ']'
+                beam_tput_overall[position] = beam_tput
+            path = home_path + dir +"/" + subdir + "/"
+            get_list_for_cdf_plots(beam_tput_overall,best_beam_dict,max_tput,best_init_mcs,best_init_beam,path,dir+"-"+subdir)
     else:
+
         beam_tput_overall = {}
         best_init_beam = (-1,-1)
         best_init_mcs = -1
@@ -659,6 +826,7 @@ for dir in directory:
         subdirectory = sorted([f for f in os.listdir(home_path + dir) if not f.startswith('.')])
         for position in subdirectory:
             best_beam = get_best_beam(home_path + dir + "/" + position)
+            # print best_beam
             best_beam_dict[position] = best_beam
             if best_init_beam == (-1,-1):
                 best_init_beam_text = convert_beam_to_text(best_beam)
@@ -697,5 +865,9 @@ for dir in directory:
 
 if plotparameter != "ALL":
     plotCDFUsingList()
-else:
+elif plotparameter == "ALL":
     plotCDFForAllParameters()
+else:
+    ##locatinoWise pdp - similarity
+    plotIncludingLocations(locList,pdp_list)
+    
